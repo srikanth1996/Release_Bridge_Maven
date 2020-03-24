@@ -1,16 +1,41 @@
 package Release_bridge.Release_Bridge_Project;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
+import javax.mail.BodyPart;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.Multipart;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
+import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import java.util.Date;
 
 
 import org.apache.poi.ss.usermodel.Cell;
@@ -84,7 +109,7 @@ public class Release_bridge_Challange
 }*/
 	
 	
-	public static void main(String args[]) throws InterruptedException
+	public static void main(String args[]) throws InterruptedException, IOException, ParseException
 	{
 		//System.setProperty("webdriver.chrome.driver","C:\\chromedriver.exe");
 		//System.setProperty("webdriver.gecko.driver", "C:\\Program Files\\Mozilla Firefox\\firefox.exe");
@@ -104,9 +129,19 @@ public class Release_bridge_Challange
 	    	};
 	   // driver2.wait(20000);
 	    driver2.findElement(By.xpath("//*[@id=\"userInput\"]")).click();
+	    
 	    System.out.println("succesfully cleared username");
 	    
-	    driver2.findElement(By.xpath("//*[@id=\"userInput\"]")).sendKeys("srchennu");
+	    
+	    FileReader reader=new FileReader("common.properties");  
+	      
+	    Properties p=new Properties();  
+	    p.load(reader);  
+	    
+	    System.out.println(p.getProperty("Username"));  
+	    System.out.println(p.getProperty("password"));  
+	    
+	    driver2.findElement(By.xpath("//*[@id=\"userInput\"]")).sendKeys(p.getProperty("Username").toString());
 	    System.out.println("succesfully entered username");
 	    
 	    driver2.findElement(By.xpath("//*[@id=\"login-button\"]")).click();
@@ -119,7 +154,7 @@ public class Release_bridge_Challange
 
 	    wait.until(ExpectedConditions.visibilityOf(element));
 	    element.click();
-	    element.sendKeys("SriDec!2019");
+	    element.sendKeys(p.getProperty("password").toString());
 	    System.out.println("successfully entered password");
 	    
 	    
@@ -218,6 +253,66 @@ public class Release_bridge_Challange
 	    	};
 	    // 9 | selectFrame | index=0 | 
 	    driver2.switchTo().frame(0);
+	    
+	    
+	    driver2.findElement(By.id("pyLabel")).click();
+	    WebElement dropdown3 = driver2.findElement(By.id("pyLabel"));
+	    Select dropdown2 = new Select(dropdown3);
+	      List<WebElement> allElements_before = dropdown2.getOptions();
+	      System.out.println("size of drop down is :"+allElements_before.size());
+	      ArrayList<String> DropdownString1 = new ArrayList();
+		     for(WebElement ele1 :allElements_before)
+		     {
+		    	 //System.out.println(ele.getText());
+		    	 DropdownString1.add(ele1.getText());
+		     }
+	     
+		     XSSFWorkbook workbook = new XSSFWorkbook(); 
+	         
+		        //Create a blank sheet
+		        XSSFSheet sheet = workbook.createSheet("All Data");
+		       // FileOutputStream out = new FileOutputStream(new File("howtodoinjava_demo.xlsx"));
+	  
+		        int count=0;
+		        
+		        Map<String, Object[]> data = new TreeMap<String, Object[]>();
+			       
+	        	
+	        	
+	 for(int k=0;k<DropdownString1.size();k++)
+	  	{
+	  	
+		 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
+			Date date = new Date();
+			System.out.println("current Date is :"+dateFormat.format(date));
+			String splitting[]=DropdownString1.get(k).toString().split(" ");
+			String year = splitting[0].replace("FY", "20");
+			String month = splitting[1].substring(0,3);
+			String day = splitting[2];
+			
+			String month_new = null;
+			if(month.equalsIgnoreCase("Jan")) {month_new="01";}
+			if(month.equalsIgnoreCase("Feb")) {month_new="02";}
+			if(month.equalsIgnoreCase("Mar")) {month_new="03";}
+			if(month.equalsIgnoreCase("Apr")) {month_new="04";}
+			if(month.equalsIgnoreCase("May")) {month_new="05";}
+			if(month.equalsIgnoreCase("Jun")) {month_new="06";}
+			if(month.equalsIgnoreCase("Jul")) {month_new="07";}
+			if(month.equalsIgnoreCase("Aug")) {month_new="08";}
+			if(month.equalsIgnoreCase("Sep")) {month_new="09";}
+			if(month.equalsIgnoreCase("Oct")) {month_new="10";}
+			if(month.equalsIgnoreCase("Nov")) {month_new="11";}
+			if(month.equalsIgnoreCase("Dec")) {month_new="12";}
+			
+				
+			String uidate = day+"/"+month_new+"/"+year;
+			System.out.println("UI date is : "+uidate);
+			Date date1=new SimpleDateFormat("dd/MM/yyyy").parse(uidate);  
+			System.out.println("UI COnverted Date is :"+dateFormat.format(date1));
+			
+			
+			 if(dateFormat.format(date).compareTo(dateFormat.format(date1)) < 0)
+			 {
 	    // 10 | click | id=pyLabel | d
 	    driver2.findElement(By.id("pyLabel")).click();
 	    System.out.println("======Sucessfully clicked dropdown label");
@@ -238,7 +333,9 @@ public class Release_bridge_Challange
 	     }
 	    
 	     
-	     	String option ="FY20 November 24 Release Event";
+	     
+	     
+	     	String option =DropdownString1.get(k).toString();
 	     //	String xpath ="//option[. = 'FY20 March 08 Release Event']";
 	     	String xpath1 = "//option[.= '"+option+"']";
 	      dropdown.findElement(By.xpath(xpath1)).click();
@@ -260,13 +357,13 @@ public class Release_bridge_Challange
 	    String optionselect  = "option:nth-child("+index1+")";
 	    System.out.println("css selector path is :"+optionselect);
 	    driver2.findElement(By.cssSelector(optionselect)).click();
-	    System.out.println("=====Sucessfully selected Nov24");
+	    System.out.println("=====Sucessfully selected : "+DropdownString1.get(k).toString());
 	    js = (JavascriptExecutor) driver2;
 	    // 13 | runScript | window.scrollTo(0,0) | 
 	    js.executeScript("window.scrollTo(0,0)");
 	    
 	    synchronized (driver2){
-	    	driver2.wait(20000);
+	    	driver2.wait(30000);
 	    	};
 	    	
 	    	
@@ -294,19 +391,21 @@ public class Release_bridge_Challange
 		    	    	
 	    	List  rows = driver2.findElements(By.xpath(".//*[@id='gridBody_right']/table/tbody/tr/td[1]")); 
 	        System.out.println("No of rows are : " + rows.size());
-	        XSSFWorkbook workbook = new XSSFWorkbook(); 
-	         
-	        //Create a blank sheet
-	        XSSFSheet sheet = workbook.createSheet("Employee Data");
 	        
-	        Map<String, Object[]> data = new TreeMap<String, Object[]>();
-	        data.put("1", new Object[] {"Service Allignment", "ReleaseId","Release Name ","RFC Id"," Status "," RFC Title "," Submitted by "," Submitted Date "," RFC Start Date "," RFO End Date"});
+	        
+	        data = new TreeMap<String, Object[]>();
+	        if(count==0)
+	        {
+	        	data.put("1", new Object[] {"Service Allignment", "ReleaseId","Release Name ","RFC Id"," Status "," RFC Title "," Submitted by "," Submitted Date "," RFC Start Date "," RFO End Date"});
+	        }
 	        for(int i=2;i<=rows.size()+1;i++)
 	        {
+
 	        	String getServiceAllignment = ".//*[@id='gridBody_right']/table/tbody/tr["+i+"]/td[1]";
 	        	String serviceAllignment = driver2.findElement(By.xpath(getServiceAllignment)).getText();
 	        	System.out.println("Service Allignment :"+serviceAllignment);
-	        	
+	        	if(!serviceAllignment.equalsIgnoreCase("No items"))
+	        	{
 	        	System.out.println("===========================");
 	        	String releaseId = ".//*[@id='gridBody_right']/table/tbody/tr["+i+"]/td[2]";
 	        	String getReleaseId = driver2.findElement(By.xpath(releaseId)).getText();
@@ -350,32 +449,44 @@ public class Release_bridge_Challange
 	        	data.put(Integer.toString(i), new Object[] {serviceAllignment, getReleaseId,getreleaseName,getrfcId,getstatusId,getrfcTitle,getcecId,getsubmittedDate,getrfcstartDate,getrfcendDate});
 	        	else
 	        		continue;
-	        	
 	        }
-	        
+	        	count++;
+	        }
+			 
 	        Set<String> keyset = data.keySet();
-	        int rownum = 0;
+	        int rowCount = sheet.getLastRowNum();
+	        
+	        System.out.println("Last rownum is :"+ rowCount);
+	        //int rownum = 0;
 	        for (String key : keyset)
 	        {
-	            Row row = sheet.createRow(rownum++);
+	        	
+	            Row row = sheet.createRow(++rowCount);
+	        	
 	            Object [] objArr = data.get(key);
-	            int cellnum = 0;
+	            int cellnum = 0;	
+	            Cell cell = row.createCell(cellnum);
+                cell.setCellValue(rowCount);
 	            for (Object obj : objArr)
 	            {
-	               Cell cell = row.createCell(cellnum++);
+	                cell = row.createCell(++cellnum);
 	               if(obj instanceof String)
 	                    cell.setCellValue((String)obj);
 	                else if(obj instanceof Integer)
 	                    cell.setCellValue((Integer)obj);
 	            }
 	        }
+	       // workbook.write(out);
+	        
+	  	}
+	  	}
 	        try
 	        {
 	            //Write the workbook in file system
-	            FileOutputStream out = new FileOutputStream(new File("howtodoinjava_demo.xlsx"));
+	            FileOutputStream out = new FileOutputStream(new File("Release_Brdige_Prod_Release_items.xlsx"));
 	            workbook.write(out);
 	            out.close();
-	            System.out.println("howtodoinjava_demo.xlsx written successfully on disk.");
+	            System.out.println("Release_Brdige_Prod_Release_items.xlsx written successfully on disk.");
 	        } 
 	        catch (Exception e) 
 	        {
@@ -383,20 +494,93 @@ public class Release_bridge_Challange
 	        }
 	        
 	        
-	    // 14 | click | css=#\$PRFCReportData\$ppxResults\$l11 .leftJustifyStyle | 
-	    driver2.findElement(By.cssSelector("#\\$PRFCReportData\\$ppxResults\\$l2 .leftJustifyStyle")).click();
-	    synchronized (driver2){
-	    	driver2.wait(20000);
-	    	};
-	    System.out.println("=====Succefuy opened 2nd row");
-	    synchronized (driver2){
-	    	driver2.wait(20000);
-	    	};
-	    // 15 | click | id=container_close | 
-	    //driver2.findElement(By.id("container_close")).click();
-	    // 16 | close |  | 
+	        	//send mail to particular mails
+	        send_emailWithAttachement();
+	 
 	    driver2.close();
 	    
 
 	}
+	
+	
+	
+	public static void send_emailWithAttachement() throws IOException
+	   {
+		FileReader reader1=new FileReader("common.properties");  
+	      
+	    Properties p1=new Properties();  
+	    p1.load(reader1);  
+		      // Recipient's email ID needs to be mentioned.
+		      String to = p1.getProperty("mailTo").toString();
+		      
+		      // Sender's email ID needs to be mentioned
+		      String from = p1.getProperty("mailFrom").toString();
+
+		      final String username = p1.getProperty("Username").toString()+"@cisco.com";//change accordingly
+		      final String password = p1.getProperty("password").toString();//change accordingly
+
+		      // Assuming you are sending email through relay.jangosmtp.net
+		      String host = "rcdn-mx-01.cisco.com";
+
+		      Properties props = new Properties();
+		      props.put("mail.smtp.auth", "true");
+		      props.put("mail.smtp.starttls.enable", "true");
+		      props.put("mail.smtp.host", host);
+		      props.put("mail.smtp.port", "25");
+
+		      // Get the Session object.
+		      Session session = Session.getInstance(props,
+		         new javax.mail.Authenticator() {
+		            protected PasswordAuthentication getPasswordAuthentication() {
+		               return new PasswordAuthentication(username, password);
+		            }
+		         });
+
+		      try {
+		         // Create a default MimeMessage object.
+		         Message message = new MimeMessage(session);
+
+		         // Set From: header field of the header.
+		         message.setFrom(new InternetAddress(from));
+
+		         // Set To: header field of the header.
+		         message.setRecipients(Message.RecipientType.TO,
+		            InternetAddress.parse(to));
+
+		         // Set Subject: header field
+		         message.setSubject("Release Bridge PROD/PRD Release Items");
+
+		         // Create the message part
+		         BodyPart messageBodyPart = new MimeBodyPart();
+
+		         // Now set the actual message
+		         messageBodyPart.setText("Hi , \n Please check for The following Excel for release PROD Data ");
+
+		         // Create a multipar message
+		         Multipart multipart = new MimeMultipart();
+
+		         // Set text message part
+		         multipart.addBodyPart(messageBodyPart);
+
+		         // Part two is attachment
+		         messageBodyPart = new MimeBodyPart();
+		         String filename = "Release_Brdige_Prod_Release_items.xlsx";
+		         DataSource source = new FileDataSource(filename);
+		         messageBodyPart.setDataHandler(new DataHandler(source));
+		         messageBodyPart.setFileName(filename);
+		         multipart.addBodyPart(messageBodyPart);
+
+		         // Send the complete message parts
+		         message.setContent(multipart);
+
+		         // Send message
+		         Transport.send(message);
+
+		         System.out.println("Sent message successfully....");
+		  
+		      } catch (MessagingException e) {
+		         throw new RuntimeException(e);
+		      }
+		   
+	   }
 }

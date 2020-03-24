@@ -38,8 +38,12 @@
     <artifactId>poi-ooxml</artifactId>
     <version>3.9</version>
 </dependency>
+<dependency>
+    <groupId>org.apache.commons</groupId>
+    <artifactId>commons-email</artifactId>
+    <version>1.3.1</version>
+</dependency>
   </dependencies>
-  
   <build>
 <sourceDirectory>src</sourceDirectory>
 
@@ -90,5 +94,4 @@
 </plugin>
 </plugins>
 </build>
-  
 </project>
